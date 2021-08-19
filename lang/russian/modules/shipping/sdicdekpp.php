@@ -30,17 +30,15 @@ define('MODULE_SHIPPING_SDICDEKPP_TARIF_DESC','Выберите тариф дл�
 if (isset($_SESSION) &&  !isset($current_page) && $current_page !== "modules.php")
 {
 $js ='
+<script src="../widget/widjet.js" id="ISDEKscript"></script>
 <script type="text/javascript">
 var widjetPP;
 jQuery(document).ready(function(){
 	if(typeof SDICDEK === "undefined") {
-	    //console.log("SDICDEK is", typeof SDICDEK);
+	    //console.log("PP SDICDEK is", typeof SDICDEK);
 		$.getScript("jscript/sdicdek.js", function(){
-		   //console.log("Скрипт sdicdek.js выполнен. SDICDEK is", typeof SDICDEK);
-		   callCDEKWidjetPP(SDICDEK);
-		 });
-	} else {
-	    callCDEKWidjetPP(SDICDEK);
+		   //console.log("PP Скрипт sdicdek.js выполнен. SDICDEK is", typeof SDICDEK);
+		});
 	}
 });
 
@@ -62,22 +60,21 @@ function callCDEKWidjetPP(SDICDEK){
 		},
 		callback: onCDEKWidjetPPReady,
 	};
-
+	
 	SDICDEK.init(sdicdek_params);
 }
 
 function onCDEKWidjetPPReady(widjet){
-	//console.log("onCDEKWidjetPPReady is started...");
-	widjetPP = widjet;
+    //console.log("onCDEKWidjetPPReady typeof widjetPP",typeof widjetPP);
+	if(typeof widjetPP === "undefined")
+    	widjetPP = widjet;
+	//console.log("onCDEKWidjetPPReady is started... widjetPP",widjetPP );
+	// SDI надо выдержать паузу перед запуском, иначе не успевает инициализироваться
+	setTimeout(function(){widjetPP.open();},1000);
 }
 
 function runWidjetPP(){
-    //console.log("started runWidjetPP ... ");
-    if(typeof widjetPP === "undefined") {
-        //console.log("widjetPP failed to start. Undefined!");
-        return false;
-    }
-    widjetPP.open();
+    callCDEKWidjetPP(SDICDEK);
 }
 </script>
 <input type="hidden" name="sdicdekpp_type" id="sdicdekpp_type" value="" />

@@ -30,6 +30,11 @@ switch ($_REQUEST['method'])
 		echo json_encode($cdek->updateDeliveryCost($_REQUEST['sdicdek_params']));
 		exit;
 		break;
+	case 'getOrderStatus':
+		$cdek = new sdicdek($_REQUEST['sdicdek_payment_type']);
+		echo json_encode($cdek->getOrderStatus($_REQUEST['sdicdek_params']));
+		exit;
+		break;
 	default:
 		// если вход не через AJAX
 		break;
@@ -143,21 +148,33 @@ class sdicdek
 		return $this->settings['MODULE_SHIPPING_SDICDEKPP_TARIF'];
 	}
 
+	public function getOrderStatus($params){
+		$data = array(
+			"Order" => $params["Order"],
+			"Account" => $this->getAccount(),
+			"Secure" => $this->getSecure(),
+			"ShowHistory" => $params["ShowHistory"]
+		);
+		$calc = new CalculatePriceDeliveryCdek();
+		$ret = json_decode(json_encode((array) $calc->getOrderStatus($data)), true);
+		return $ret;
+
+	}
+
 	public function quote($method = '')
 	{
 		global $order, $shipping_weight;
-		//$this->calc = new CalculatePriceDeliveryCdek();
-		//$destCityId = null;
+
 		$error = false;
 		$cost    = null;
 		$err_msg = '';
 
 		$params = array(
 			"receiverCityId" => null,
-			"senderCityId" => $this->settings['MODULE_SHIPPING_FROMCITY_ID'],
+			"senderCityId" => $this->settings['MODULE_SHIPPING_SDICDEK_FROMCITY_ID'],
 			"account" => $this->settings['MODULE_SHIPPING_SDICDEK_ACCOUNT'],
 			"secure" => $this->settings['MODULE_SHIPPING_SDICDEK_SECURE'],
-			"TariffId" => $this->settings['MODULE_SHIPPING_SDICDEK'.$this->prefix.'_TARIF']
+			"TariffId" => $this->settings['MODULE_SHIPPING_'.$this->prefix.'_TARIF']
 		);
 
 		$cost = $this->getDeliveryCost($params);
@@ -165,7 +182,7 @@ class sdicdek
 		if (!is_array($cost) || isset($cost['error']))
 		{
 			// ошибка получения стоимости доставки
-			var_dump($cost['error']);
+			//var_dump($cost['error']);
 			$error   = true;
 			$err_msg = 'Ошибка получения стоимости доставки от СДЭК. Стоимость доставки будет уточнена при обработке заказа.' . ((isset($cost['error'])) ? '<br>' . $cost['error'] : '');
 			$cost    = array('FullPrice' => TXT_UNDEFINED, 'FullPriceFormatted' => TXT_UNDEFINED, 'FullPriceWithDiscount' => TXT_UNDEFINED, 'FullPriceWithDiscountFormatted' => TXT_UNDEFINED);
@@ -811,7 +828,7 @@ function sdi_cfg_pull_down_sdicdek_tarifs($tarif_code, $key = '')
 	$name = (($key) ? 'configuration[' . $key . ']' : 'configuration_value');
 
 	$tarifs = sdicdek::getTarifs();
-var_dump($name);
+//var_dump($name);
 	return vam_draw_pull_down_menu($name, $tarifs, $tarif_code);
 }
 

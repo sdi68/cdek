@@ -233,7 +233,7 @@ class CalculatePriceDeliveryCdek {
 	 * 
 	 * 
 	 */
-	private function _getRemoteData($data,$url,$isPost = true) {
+	private function _getRemoteData($data,$url,$isPost = true, $isXML = false) {
 		header('Access-Control-Allow-Origin: *');
 		$data_string = json_encode($data);                                                                                   
 
@@ -242,11 +242,16 @@ class CalculatePriceDeliveryCdek {
 		if($isPost)
 		{
 			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-					'Content-Type: application/json')
-			);
+			if($isXML) {
+				//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, "xml_request=" . $data);
+			} else {
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+						'Content-Type: application/json')
+				);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+			}
 			curl_setopt($ch, CURLOPT_POST, 1);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
 		} else {
 			$getdata = http_build_query($data);
 			curl_setopt($ch, CURLOPT_URL, $url."?".$getdata);
@@ -255,9 +260,14 @@ class CalculatePriceDeliveryCdek {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		}
 		$result = curl_exec($ch);
+		$err     = curl_errno( $ch );
+		$errmsg  = curl_error( $ch );
+		$header  = curl_getinfo( $ch );
 		curl_close($ch);
-		
-		return json_decode($result, true);
+		if($isXML)
+			return new SimpleXMLElement($result);
+		else
+			return json_decode($result, true);
 	}
 	
 	/**
@@ -385,7 +395,11 @@ class CalculatePriceDeliveryCdek {
 			$minCode=0;
 			$out_key = 0;
 			foreach($response as $key => $item){
-				if($item['cityCode'] < $minCode || $minCode == 0) {
+				// Если Крым, то пропускаем украинскую историю
+			    if($item['regionCode'] == 538 && $item['countryCode'] == 'UA')
+				    continue;
+
+			    if($item['cityCode'] < $minCode || $minCode == 0) {
 					$minCode = $item['cityCode'];
 					$out_key = $key;
 				}
@@ -412,6 +426,27 @@ class CalculatePriceDeliveryCdek {
 		}
 		$this->error = "Город не найден";
 		return false;
+	}
+
+	public function getOrderStatus($params){
+		$url = "https://integration.cdek.ru/status_report_h.php";
+//		$data = array(
+//			"Order" => $params["Order"],
+//			"Account" => $params["Account"],
+//			"Secure" => $params["Secure"],
+//			"ShowHistory" => $params["ShowHistory"]
+//		);
+		date_default_timezone_set('UTC');
+		$date = date('Y-m-d');
+		$secure = md5($date.'&'.$params["Secure"]);
+
+		$data = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
+				'<StatusReport Account="'.$params["Account"].'" Secure="'.$secure.'" Date = "'.$date.'" ShowHistory="'.$params["ShowHistory"].'">'.
+                    '<Order DispatchNumber="'.$params["Order"].'"/>'.
+				'</StatusReport>';
+
+		$response = $this->_getRemoteData($data,$url,true, true);
+		return $response;
 	}
 }
 

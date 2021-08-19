@@ -10,7 +10,7 @@
  */
 
 var SDICDEK = {
-    _url: "includes/modules/shipping/pickpoint/pickpoint.php",
+    _url: "includes/modules/shipping/sdicdek/sdicdek.php",
     _payment_type:'',
     _prefix:'',
     _$link_block: "",
@@ -57,12 +57,12 @@ var SDICDEK = {
             this._callback = params.callback;
 
         if(!jQuery("script#ISDEKscript").length){
-            //console.log("нет скрипта #ISDEKscript !!!");
+            //console.log("init нет скрипта #ISDEKscript !!!");
             var script = document.createElement("script");
             script.src = "../widget/widjet.js";
             script.id = "ISDEKscript";
             document.head.appendChild(script);
-            //console.log("Добавлена декларация скрипта #ISDEKscript.");
+            //console.log("init Добавлена декларация скрипта #ISDEKscript.");
         }
 
         if($('#skm_LockPane').length && $('#skm_LockPane')){
@@ -119,7 +119,7 @@ var SDICDEK = {
     },
 
     _onChoose: function(wat){
-        console.log("_onChoose",wat);
+        console.log("_onChoose",wat, SDICDEK._payment_type);
         var pvz_text = wat.PVZ.Postamat?SDICDEK._msgs.MODULE_SHIPPING_SDICDEK_ATP_TEXT_ADDRESS:SDICDEK._msgs.MODULE_SHIPPING_SDICDEK_PVZ_TEXT_ADDRESS;
 
         pvz_text += ' <strong>' + wat.id + '</strong> "' + wat.PVZ.Name + '" по адресу:<br>' + wat.cityName + ' ' + wat.PVZ.Address + '<br>' + SDICDEK._getOptionsString(wat.PVZ) + '<br>';

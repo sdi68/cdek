@@ -425,7 +425,7 @@ function ipolWidjetController(setups) {
 }
 
 function ISDEKWidjet(params) {
-console.log(params);
+//console.log(params);
 	if (!params.path) {
 		var scriptPath = document.getElementById('ISDEKscript').src;
 		scriptPath = scriptPath.substring(0, scriptPath.indexOf('widjet.js')) + 'scripts/';
@@ -2152,8 +2152,11 @@ console.log(params);
 	};
 
 	widjet.sdekWidgetEvents = function () {
-
-		ipjq('.CDEK-widget__popup__close-btn').off('click').on('click', function () {
+		// SDI исправляем ошибку с закрытием виджета BOF
+		//ipjq('.CDEK-widget__popup__close-btn').off('click').on('click', function () {
+		ipjq('.CDEK-widget__popup__close-btn').off('click').on('click', function (e) {
+			e.preventDefault();
+		// SDI исправляем ошибку с закрытием виджета EOF
 			ipjq(this).closest('.CDEK-widget__popup-mask').hide();
 		});
 

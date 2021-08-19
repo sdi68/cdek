@@ -38,17 +38,15 @@ define('MODULE_SHIPPING_SDICDEKPF_TARIF_DESC','Выберите тариф дл�
 if (isset($_SESSION) &&  !isset($current_page) && $current_page !== "modules.php")
 {
 	$js ='
+
 <script type="text/javascript">
 var widjetPF;
 jQuery(document).ready(function(){
 	if(typeof SDICDEK === "undefined") {
-	    //console.log("SDICDEK is", typeof SDICDEK);
+	    //console.log("PF SDICDEK is", typeof SDICDEK);
 		$.getScript("jscript/sdicdek.js", function(){
-		   //console.log("Скрипт sdicdek.js выполнен. SDICDEK is", typeof SDICDEK);
-		   callCDEKWidjetPF(SDICDEK);
-		 });
-	} else {
-	    callCDEKWidjetPF(SDICDEK);
+		   //console.log("PF Скрипт sdicdek.js выполнен. SDICDEK is", typeof SDICDEK);
+		});
 	}
 });
 
@@ -75,17 +73,16 @@ function callCDEKWidjetPF(SDICDEK){
 }
 
 function onCDEKWidjetPFReady(widjet){
-	//console.log("onCDEKWidjetPFReady is started...");
-	widjetPF = widjet;
+    //console.log("onCDEKWidjetPFReady typeof widjetPF",typeof widjetPF);
+	if(typeof widjetPF === "undefined")
+    	widjetPF = widjet;
+	//console.log("onCDEKWidjetPFReady is started... widjetPF",widjetPF );
+	// SDI надо выдержать паузу перед запуском, иначе не успевает инициализироваться
+	setTimeout(function(){widjetPF.open();},1000);
 }
 
 function runWidjetPF(){
-    //console.log("started runWidjetPF ... ");
-    if(typeof widjetPF === "undefined") {
-        //console.log("widjetPF failed to start. Undefined!");
-        return false;
-    }
-    widjetPF.open();
+	callCDEKWidjetPF(SDICDEK);  
 }
 </script>
 <input type="hidden" name="sdicdekpf_type" id="sdicdekpf_type" value="" />
